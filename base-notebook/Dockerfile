@@ -44,9 +44,11 @@ RUN apt-get update --yes && \
     wget \
     # - bzip2 is necessary to extract the micromamba executable.
     bzip2 && \
+    # For building micromamba
+    git cmake ninja-build && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-    locale-gen git cmake ninja-build
+    locale-gen
 
 # Configure environment
 ENV CONDA_DIR=/opt/conda \
