@@ -120,7 +120,7 @@ RUN set -x && \
     tar -xvjf /tmp/micromamba.tar.bz2 --strip-components=1 bin/micromamba && \
     rm /tmp/micromamba.tar.bz2 && \
     git clone https://github.com/jonashaag/mamba -b no-extract-subproc && \
-    ./micromamba install -p /tmp/micromamba-build --file mamba/micromamba/environment-dev.yml && \
+    ./micromamba create -p /tmp/micromamba-build --file mamba/micromamba/environment-dev.yml && \
     cd mamba && \
     mkdir build && cd build && ../../micromamba run -p /tmp/micromamba-build cmake .. \
      -DBUILD_LIBMAMBA=ON \
