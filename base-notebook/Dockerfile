@@ -123,7 +123,7 @@ RUN set -x && \
 RUN ./micromamba create -v -p /tmp/micromamba-build --file mamba/micromamba/environment-dev.yml
 RUN cd mamba && \
     set -x && \
-    mkdir build && cd build && ../../micromamba run -p /tmp/micromamba-build bash -c 'cmake .. -GNinja -DBUILD_LIBMAMBA=ON -DBUILD_STATIC=ON -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_MICROMAMBA=ON -DMICROMAMBA_LINKAGE=STATIC && ninja -j'
+    mkdir build && cd build && ../../micromamba run -p /tmp/micromamba-build bash -c 'cmake .. -GNinja -DBUILD_LIBMAMBA=ON -DBUILD_STATIC=ON -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_MICROMAMBA=ON -DMICROMAMBA_LINKAGE=STATIC && ninja -j4'
 RUN set -x && \
     PYTHON_SPECIFIER="python=${PYTHON_VERSION}" && \
     if [[ "${PYTHON_VERSION}" == "default" ]]; then PYTHON_SPECIFIER="python"; fi && \
