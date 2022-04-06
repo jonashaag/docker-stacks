@@ -121,10 +121,11 @@ RUN set -x && \
     rm /tmp/micromamba.tar.bz2 && \
     git clone https://github.com/jonashaag/mamba -b no-extract-subproc && \
     ./micromamba shell init --shell=bash --prefix=~/micromamba && \
-    ./micromamba create -p /tmp/micromamba-build --file mamba/micromamba/environment-dev.yml && \
-    cd mamba && \
-    mkdir build && cd build && bash -lc '../../micromamba activate /tmp/micromamba-build && cmake .. -DBUILD_LIBMAMBA=ON -DBUILD_STATIC=ON -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_MICROMAMBA=ON -DMICROMAMBA_LINKAGE=STATIC && ninja -j' \
-    && cd ../../ && \
+    ./micromamba create -p /tmp/micromamba-build --file mamba/micromamba/environment-dev.yml
+RUN cd mamba &&
+    set -x && \
+    mkdir build && cd build && bash -lxc '../../micromamba activate /tmp/micromamba-build && cmake .. -DBUILD_LIBMAMBA=ON -DBUILD_STATIC=ON -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_MICROMAMBA=ON -DMICROMAMBA_LINKAGE=STATIC && ninja -j' \
+RUN set -x && \
     PYTHON_SPECIFIER="python=${PYTHON_VERSION}" && \
     if [[ "${PYTHON_VERSION}" == "default" ]]; then PYTHON_SPECIFIER="python"; fi && \
     MAMBA_SPECIFIER="mamba=${MAMBA_VERSION}" && \
