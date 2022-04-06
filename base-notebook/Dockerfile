@@ -45,7 +45,7 @@ RUN apt-get update --yes && \
     # - bzip2 is necessary to extract the micromamba executable.
     bzip2 \
     # For building micromamba
-    git \
+    git && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
