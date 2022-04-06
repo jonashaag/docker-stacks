@@ -120,15 +120,15 @@ RUN set -x && \
     tar -xvjf /tmp/micromamba.tar.bz2 --strip-components=1 bin/micromamba && \
     rm /tmp/micromamba.tar.bz2 && \
     git clone https://github.com/jonashaag/mamba -b no-extract-subproc && \
-    ./micromamba install --root-prefix="${CONDA_DIR}" --name micromamba-builld --file mamba/micromamba/environment-dev.yml && \
+    ./micromamba install --prefix="${CONDA_DIR}" --root-prefix="${CONDA_DIR}" --name micromamba-build --file mamba/micromamba/environment-dev.yml && \
     cd mamba && \
-    mkdir build && cd build && ../../micromamba run --root-prefix="${CONDA_DIR}" -n micromamba-build cmake .. \
+    mkdir build && cd build && ../../micromamba run --prefix="${CONDA_DIR}" --root-prefix="${CONDA_DIR}" -n micromamba-build cmake .. \
      -DBUILD_LIBMAMBA=ON \
      -DBUILD_STATIC=ON \
      -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
      -DBUILD_MICROMAMBA=ON \
      -DMICROMAMBA_LINKAGE=STATIC \
-    && ../../micromamba run --root-prefix="${CONDA_DIR}" -n micromamba-build ninja -j && cd ../../ && \
+    && ../../micromamba run --root-prefix="${CONDA_DIR}" --prefix="${CONDA_DIR}" -n micromamba-build ninja -j && cd ../../ && \
     PYTHON_SPECIFIER="python=${PYTHON_VERSION}" && \
     if [[ "${PYTHON_VERSION}" == "default" ]]; then PYTHON_SPECIFIER="python"; fi && \
     MAMBA_SPECIFIER="mamba=${MAMBA_VERSION}" && \
