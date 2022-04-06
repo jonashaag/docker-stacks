@@ -46,7 +46,7 @@ RUN apt-get update --yes && \
     bzip2 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-    locale-gen
+    locale-gen git cmake ninja-build
 
 # Configure environment
 ENV CONDA_DIR=/opt/conda \
@@ -117,7 +117,6 @@ RUN set -x && \
         "https://micromamba.snakepit.net/api/micromamba/linux-${arch}/${MICROMAMBA_VERSION}" && \
     tar -xvjf /tmp/micromamba.tar.bz2 --strip-components=1 bin/micromamba && \
     rm /tmp/micromamba.tar.bz2 && \
-    apt-get install -y git cmake ninja-build && \
     git clone https://github.com/jonashaag/mamba -b no-extract-subproc && \
     cd mamba && \
     ./micromamba install --name micromamba-builld --file micromamba/environment-dev.yml && \
