@@ -122,7 +122,7 @@ RUN set -x && \
     git clone https://github.com/jonashaag/mamba -b no-extract-subproc && \
     ./micromamba create -p /tmp/micromamba-build --file mamba/micromamba/environment-dev.yml && \
     cd mamba && \
-    mkdir build && cd build && bash -lc '../../micromamba activate -p /tmp/micromamba-build && cmake .. -DBUILD_LIBMAMBA=ON -DBUILD_STATIC=ON -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_MICROMAMBA=ON -DMICROMAMBA_LINKAGE=STATIC && ninja -j' \
+    mkdir build && cd build && bash -lc '../../micromamba activate /tmp/micromamba-build && cmake .. -DBUILD_LIBMAMBA=ON -DBUILD_STATIC=ON -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_MICROMAMBA=ON -DMICROMAMBA_LINKAGE=STATIC && ninja -j' \
     && cd ../../ && \
     PYTHON_SPECIFIER="python=${PYTHON_VERSION}" && \
     if [[ "${PYTHON_VERSION}" == "default" ]]; then PYTHON_SPECIFIER="python"; fi && \
