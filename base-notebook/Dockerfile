@@ -43,7 +43,7 @@ RUN apt-get update --yes && \
     tini \
     wget \
     # - bzip2 is necessary to extract the micromamba executable.
-    bzip2 && \
+    bzip2 \
     # For building micromamba
     git cmake ninja-build && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
