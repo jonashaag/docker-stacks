@@ -45,7 +45,7 @@ RUN apt-get update --yes && \
     # - bzip2 is necessary to extract the micromamba executable.
     bzip2 \
     # For building micromamba
-    git cmake ninja-build && \
+    git \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen
@@ -122,13 +122,8 @@ RUN set -x && \
     git clone https://github.com/jonashaag/mamba -b no-extract-subproc && \
     ./micromamba create -p /tmp/micromamba-build --file mamba/micromamba/environment-dev.yml && \
     cd mamba && \
-    mkdir build && cd build && ../../micromamba run -p /tmp/micromamba-build cmake .. \
-     -DBUILD_LIBMAMBA=ON \
-     -DBUILD_STATIC=ON \
-     -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
-     -DBUILD_MICROMAMBA=ON \
-     -DMICROMAMBA_LINKAGE=STATIC \
-    && ../../micromamba run -p /tmp/micromamba-build ninja -j && cd ../../ && \
+    mkdir build && cd build && bash -lc '../../micromamba activate -p /tmp/micromamba-build && cmake .. -DBUILD_LIBMAMBA=ON -DBUILD_STATIC=ON -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_MICROMAMBA=ON -DMICROMAMBA_LINKAGE=STATIC && ninja -j' \
+    && cd ../../ && \
     PYTHON_SPECIFIER="python=${PYTHON_VERSION}" && \
     if [[ "${PYTHON_VERSION}" == "default" ]]; then PYTHON_SPECIFIER="python"; fi && \
     MAMBA_SPECIFIER="mamba=${MAMBA_VERSION}" && \
