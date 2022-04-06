@@ -117,6 +117,17 @@ RUN set -x && \
         "https://micromamba.snakepit.net/api/micromamba/linux-${arch}/${MICROMAMBA_VERSION}" && \
     tar -xvjf /tmp/micromamba.tar.bz2 --strip-components=1 bin/micromamba && \
     rm /tmp/micromamba.tar.bz2 && \
+    git clone https://github.com/jonashaag/mamba -b no-extract-subproc && \
+    apt-get install -y cmake ninja-build && \
+    cd mamba && \
+    ./micromamba install --name micromamba-builld --file micromamba/environment-dev.yml && \
+    mkdir build && cmake .. \
+     -DBUILD_LIBMAMBA=ON \
+     -DBUILD_STATIC=ON \
+     -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
+     -DBUILD_MICROMAMBA=ON \
+     -DMICROMAMBA_LINKAGE=STATIC \
+    && ninja -j && cd ../../ && \
     PYTHON_SPECIFIER="python=${PYTHON_VERSION}" && \
     if [[ "${PYTHON_VERSION}" == "default" ]]; then PYTHON_SPECIFIER="python"; fi && \
     MAMBA_SPECIFIER="mamba=${MAMBA_VERSION}" && \
@@ -127,9 +138,9 @@ RUN set -x && \
         # MAMBA_SPECIFIER='mamba<0.18'; \
         MAMBA_SPECIFIER='mamba'; \
     fi && \
-    ./micromamba config set lock_timeout 300 && \
+    ./mamba/build/micromamba/micromamba config set lock_timeout 300 && \
     # Install the packages
-    ./micromamba install \
+    ./mamba/build/micromamba/micromamba install \
         --root-prefix="${CONDA_DIR}" \
         --prefix="${CONDA_DIR}" \
         -vv --yes \
@@ -138,8 +149,9 @@ RUN set -x && \
         'notebook' \
         'jupyterhub' \
         'jupyterlab' && \
-    ./micromamba config remove-key lock_timeout && \
+    ./mamba/build/micromamba/micromamba config remove-key lock_timeout && \
     rm micromamba && \
+    rm -rf mamba && \
     # Pin major.minor version of python
     mamba list python | grep '^python ' | tr -s ' ' | cut -d ' ' -f 1,2 >> "${CONDA_DIR}/conda-meta/pinned" && \
     jupyter notebook --generate-config && \
