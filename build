@@ -1,0 +1,2 @@
+#!/bin/bash -eux
+~/.docker/cli-plugins/buildx-v0.8.2.linux-amd64 build -f base-notebook/Dockerfile base-notebook/ -t x --platform linux/arm64
