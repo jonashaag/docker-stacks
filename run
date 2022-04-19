@@ -1,0 +1,4 @@
+#!/bin/bash -eux
+for i in `seq 20`; do
+  docker run --env CI=1 --rm -it --platform "linux/arm64" x ./micromamba install --root-prefix=/opt/conda -c conda-forge --prefix=/opt/conda --log-level trace --yes python=3.9 mamba notebook jupyterhub jupyterlab 2>&1 | tee log$i
+done
