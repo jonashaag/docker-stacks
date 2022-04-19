@@ -106,17 +106,20 @@ RUN mkdir "/home/${NB_USER}/work" && \
 # files across image layers when the permissions change
 COPY --chown="${NB_UID}:${NB_GID}" initial-condarc "${CONDA_DIR}/.condarc"
 WORKDIR /tmp
-RUN set -x && \
+RUN wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-aarch64/latest | tar -xvj bin/micromamba
+COPY /mamba/micromamba/environment-dev.yml .
+RUN bin/micromamba create -f environment-dev.yml -y
+COPY --chown="${NB_UID}:${NB_GID}" mamba mamba
+RUN cd mamba/b && ../../bin/micromamba run -n mamba-dev   bash -c '  cmake ..         -DBUILD_LIBMAMBA=ON         -DBUILD_STATIC=ON         -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX         -DBUILD_MICROMAMBA=ON         -DMICROMAMBA_LINKAGE=STATIC -GNinja'
+RUN cd mamba/b && ../../bin/micromamba run -n mamba-dev ninja
+RUN bin/micromamba remove -n mamba-dev && bin/micromamba clean -tpy && rm -rf ~/micromamba/pkgs/*-* && rm -r bin/
+RUN cp mamba/b/micromamba/micromamba . && set -x && \
     arch=$(uname -m) && \
     if [ "${arch}" = "x86_64" ]; then \
         # Should be simpler, see <https://github.com/mamba-org/mamba/issues/1437>
         arch="64"; \
     fi && \
     if [[ "${MICROMAMBA_VERSION}" == "default" ]]; then MICROMAMBA_VERSION="latest"; fi && \
-    wget -qO /tmp/micromamba.tar.bz2 \
-        "https://micromamba.snakepit.net/api/micromamba/linux-${arch}/${MICROMAMBA_VERSION}" && \
-    tar -xvjf /tmp/micromamba.tar.bz2 --strip-components=1 bin/micromamba && \
-    rm /tmp/micromamba.tar.bz2 && \
     PYTHON_SPECIFIER="python=${PYTHON_VERSION}" && \
     if [[ "${PYTHON_VERSION}" == "default" ]]; then PYTHON_SPECIFIER="python"; fi && \
     MAMBA_SPECIFIER="mamba=${MAMBA_VERSION}" && \
@@ -127,55 +130,4 @@ RUN set -x && \
         # MAMBA_SPECIFIER='mamba<0.18'; \
         MAMBA_SPECIFIER='mamba'; \
     fi && \
-    ./micromamba config set lock_timeout 300 && \
-    # Install the packages
-    ./micromamba install \
-        --root-prefix="${CONDA_DIR}" \
-        --prefix="${CONDA_DIR}" \
-        -vv --yes \
-        "${PYTHON_SPECIFIER}" \
-        "${MAMBA_SPECIFIER}" \
-        'notebook' \
-        'jupyterhub' \
-        'jupyterlab' && \
-    ./micromamba config remove-key lock_timeout && \
-    rm micromamba && \
-    # Pin major.minor version of python
-    mamba list python | grep '^python ' | tr -s ' ' | cut -d ' ' -f 1,2 >> "${CONDA_DIR}/conda-meta/pinned" && \
-    jupyter notebook --generate-config && \
-    mamba clean --all -f -y && \
-    npm cache clean --force && \
-    jupyter lab clean && \
-    rm -rf "/home/${NB_USER}/.cache/yarn" && \
-    fix-permissions "${CONDA_DIR}" && \
-    fix-permissions "/home/${NB_USER}"
-
-EXPOSE 8888
-
-# Configure container startup
-ENTRYPOINT ["tini", "-g", "--"]
-CMD ["start-notebook.sh"]
-
-# Copy local files as late as possible to avoid cache busting
-COPY start.sh start-notebook.sh start-singleuser.sh /usr/local/bin/
-# Currently need to have both jupyter_notebook_config and jupyter_server_config to support classic and lab
-COPY jupyter_server_config.py /etc/jupyter/
-
-# Fix permissions on /etc/jupyter as root
-USER root
-
-# Legacy for Jupyter Notebook Server, see: [#1205](https://github.com/jupyter/docker-stacks/issues/1205)
-RUN sed -re "s/c.ServerApp/c.NotebookApp/g" \
-    /etc/jupyter/jupyter_server_config.py > /etc/jupyter/jupyter_notebook_config.py && \
-    fix-permissions /etc/jupyter/
-
-# HEALTHCHECK documentation: https://docs.docker.com/engine/reference/builder/#healthcheck
-# This healtcheck works well for `lab`, `notebook`, `nbclassic`, `server` and `retro` jupyter commands
-# https://github.com/jupyter/docker-stacks/issues/915#issuecomment-1068528799
-HEALTHCHECK  --interval=15s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -O- --no-verbose --tries=1 http://localhost:8888/api || exit 1
-
-# Switch back to jovyan to avoid accidental container runs as root
-USER ${NB_UID}
-
-WORKDIR "${HOME}"
+    ./micromamba config set lock_timeout 300
